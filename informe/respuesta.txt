@@ -10,7 +10,7 @@ A partir de las consultas realizadas, se concluye que la clasificación asignada
 
 
 
-
+Auditoría humana simulada.
 Se realizó una auditoría humana simulada sobre cinco normativas del dataset. Para cada caso se revisó la clasificación entregada
  por la IA, las reglas de negocio activadas, la evidencia textual asociada y la coherencia entre la explicación generada y 
  los criterios de relevancia definidos. Como resultado, algunas normativas fueron validadas, mientras que otras fueron marcadas

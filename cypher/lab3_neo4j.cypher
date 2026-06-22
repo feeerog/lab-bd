@@ -755,3 +755,21 @@ MATCH path =
 -[:CONSIDERADA_EN_AUDITORIA]->(ah:AuditoriaHumana)
 RETURN path
 LIMIT 10;
+
+
+
+//Punto 5 
+// 1. Circular N° 38 del 30 de Abril del 2025
+// 2. Resolución Exenta SII N° 12 del 17 de Enero del 2025
+// 3. Resolución Exenta SII N° 79 del 26 de Junio del 2025
+// 4. Circular N° 10 del 30 de Enero del 2025
+// 5. Circular N° 35 del 30 de Abril del 2025
+
+MATCH (n:Normativa)-[:REVISADA_EN]->(ah:AuditoriaHumana)
+RETURN n.name AS normativa,
+       ah.clasificacion_ia AS clasificacion_ia,
+       ah.reglas_activadas AS reglas_activadas,
+       ah.evidencias_textuales AS evidencias_textuales,
+       ah.juicio_grupo AS juicio_grupo,
+       ah.justificacion AS justificacion
+ORDER BY normativa;
