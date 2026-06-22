@@ -1,0 +1,18 @@
+Pregunta central:
+
+A partir de las consultas realizadas, se concluye que la clasificación asignada por el agente IA está suficientemente
+ explicada en la mayoría de los casos, especialmente cuando la normativa clasificada como Relevante activa reglas de negocio y 
+ cuenta con evidencia textual objetiva. Sin embargo, también se identificaron casos que requieren revisión humana, principalmente 
+ normativas clasificadas como No Relevantes que sí activan reglas de negocio, o casos donde la explicación no queda completamente 
+ alineada con la evidencia detectada. Por lo tanto, la clasificación de la IA puede considerarse útil como apoyo al análisis 
+ normativo, pero no debe aceptarse automáticamente sin auditoría humana.
+
+
+
+
+
+Se realizó una auditoría humana simulada sobre cinco normativas del dataset. Para cada caso se revisó la clasificación entregada
+ por la IA, las reglas de negocio activadas, la evidencia textual asociada y la coherencia entre la explicación generada y 
+ los criterios de relevancia definidos. Como resultado, algunas normativas fueron validadas, mientras que otras fueron marcadas
+  como “Requiere más antecedentes” cuando existía una posible inconsistencia entre la clasificación IA y las reglas activadas. 
+  Esta auditoría permite incorporar control humano sobre una decisión automatizada y fortalece la explicabilidad del grafo.
