@@ -1,20 +1,6 @@
 // ======================================================
 // LABORATORIO 3 - INF325 BASES DE DATOS AVANZADAS
-// Grafo de Explicabilidad para Auditoría de Clasificación Normativa
-// Versión FINAL corregida
 // ======================================================
-//
-// INSTRUCCIONES DE USO:
-// 1. Guardar normativas_clasificadas_IA.csv como "UTF-8 (sin BOM)" y copiarlo a la
-//    carpeta import de Neo4j (en Neo4j Desktop: botón derecho sobre la BD > Open
-//    folder > Import). El BOM es importante: si el archivo tiene BOM, la primera
-//    columna se lee como "\uFEFFname" en vez de "name" y NO se carga ninguna fila.
-// 2. Ejecutar este script COMPLETO de una sola vez en Neo4j Browser
-//    (no es necesario ejecutar bloque por bloque, pero se puede).
-// 3. Las consultas de la sección 9 son las que se deben capturar para el informe.
-//
-// VERIFICACIÓN RÁPIDA tras la carga (sección 8): deben aparecer 129 normativas
-// (20 Relevante / 109 No Relevante). Si aparece 0, el problema es el BOM del CSV.
 
 
 // ------------------------------------------------------
@@ -641,14 +627,14 @@ ORDER BY veces_activada DESC;
 // ------------------------------------------------------
 // Consulta 1: Clasificación general
 // ------------------------------------------------------
-// Visualiza normativas Relevantes y No Relevantes con nombre, tipo
-// documental, fuente, descripción y explicación de la IA.
 
+                                      
 MATCH (n:Normativa)-[:ES_TIPO]->(t:TipoDocumento)
 MATCH (n)-[:PROVIENE_DE]->(f:Fuente)
+MATCH (n)-[:CLASIFICADA_COMO]->(c:ClasificacionIA)
 MATCH (n)-[:TIENE_EXPLICACION]->(e:ExplicacionIA)
 RETURN n.name AS normativa,
-       n.relevancia_ia AS clasificacion_ia,
+       c.valor AS clasificacion_ia,
        t.nombre AS tipo_documental,
        f.nombre AS fuente,
        n.description AS descripcion,
@@ -656,13 +642,18 @@ RETURN n.name AS normativa,
 ORDER BY clasificacion_ia DESC, normativa
 LIMIT 30;
 
+//Grafo
+MATCH path1 = (n:Normativa)-[:ES_TIPO]->(:TipoDocumento)
+MATCH path2 = (n)-[:PROVIENE_DE]->(:Fuente)
+MATCH path3 = (n)-[:CLASIFICADA_COMO]->(:ClasificacionIA)
+MATCH path4 = (n)-[:TIENE_EXPLICACION]->(:ExplicacionIA)
+RETURN path1, path2, path3, path4
+LIMIT 8;
 
 // ------------------------------------------------------
 // Consulta 2: Explicación de una normativa específica
 // ------------------------------------------------------
-// Muestra clasificación, explicación, reglas activadas y evidencia
-// textual asociada para una normativa puntual.
-// Se usa Circular N° 38 porque es un caso Relevante con buen respaldo.
+
 
 MATCH (n:Normativa {name: "Circular N° 38 del 30 de Abril del 2025"})
 MATCH (n)-[:CLASIFICADA_COMO]->(c:ClasificacionIA)
@@ -674,13 +665,18 @@ RETURN n.name AS normativa,
        e.texto AS explicacion_ia,
        collect(DISTINCT r.nombre) AS reglas_activadas,
        collect(DISTINCT ev.texto)[0..5] AS evidencias_textuales;
+                                           
+//Grafo
+MATCH (n:Normativa {name: "Circular N° 38 del 30 de Abril del 2025"})
+OPTIONAL MATCH cadena1 = (n)-[:CLASIFICADA_COMO]->(:ClasificacionIA)-[:SE_JUSTIFICA_CON]->(:ExplicacionIA)
+OPTIONAL MATCH cadena2 = (n)-[:ACTIVA_REGLA]->(:ReglaNegocio)-[:RESPALDADA_POR]->(:EvidenciaTextual)-[:EVIDENCIA_DE]->(n)
+RETURN cadena1, cadena2;
 
 
 // ------------------------------------------------------
 // Consulta 3: Normativas relevantes con respaldo de negocio
 // ------------------------------------------------------
-// Identifica normativas Relevantes que activan reglas de negocio
-// y cuentan con evidencia textual objetiva.
+
 
 MATCH (n:Normativa:Relevante)-[:ACTIVA_REGLA]->(r:ReglaNegocio)
 MATCH (r)-[:RESPALDADA_POR]->(ev:EvidenciaTextual)-[:EVIDENCIA_DE]->(n)
@@ -691,17 +687,12 @@ RETURN n.name AS normativa,
        collect(DISTINCT ev.patron_detectado)[0..5] AS patrones_detectados
 ORDER BY total_reglas DESC, normativa;
 
+                                           
 
 // ------------------------------------------------------
 // Consulta 4: Posibles inconsistencias
 // ------------------------------------------------------
-// Detecta:
-// - No Relevantes que activan reglas de negocio (la IA dijo que no
-//   importaba, pero el texto objetivo contiene evidencia de que sí).
-// - Relevantes que no activan ninguna regla (la IA dijo que sí
-//   importaba, pero no hay evidencia textual objetiva que lo respalde).
-// Con el dataset entregado esto devuelve ~16 casos
-// (2 Relevantes sin regla + 14 No Relevantes con regla).
+
 
 MATCH (n:Normativa)
 OPTIONAL MATCH (n)-[:ACTIVA_REGLA]->(r:ReglaNegocio)
@@ -721,9 +712,7 @@ ORDER BY total_reglas DESC, normativa;
 // ------------------------------------------------------
 // Consulta 5: Revisión humana
 // ------------------------------------------------------
-// Identifica normativas con explicación débil, insuficiente o poco
-// alineada con las reglas de negocio (incluye las inconsistencias
-// de la Consulta 4 más explicaciones demasiado cortas).
+
 
 MATCH (n:Normativa)-[:TIENE_EXPLICACION]->(e:ExplicacionIA)
 OPTIONAL MATCH (n)-[:REVISADA_EN]->(ah:AuditoriaHumana)
@@ -742,9 +731,7 @@ ORDER BY alineada_con_reglas ASC, total_reglas_activadas DESC, normativa;
 // ------------------------------------------------------
 // Consulta extra para captura gráfica: ruta explicable completa
 // ------------------------------------------------------
-// Muestra visualmente la cadena conceptual pedida por el enunciado:
-// Normativa -> Clasificación -> Explicación -> Regla -> Evidencia -> Auditoría.
-// Útil para la captura de "vista general del grafo" que pide la plantilla.
+
 
 MATCH path =
 (n:Normativa {name: "Circular N° 35 del 30 de Abril del 2025"})
