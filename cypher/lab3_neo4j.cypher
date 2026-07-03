@@ -581,39 +581,6 @@ MATCH (r:ReglaNegocio)-[:RESPALDADA_POR]->(ev:EvidenciaTextual)-[:EVIDENCIA_DE]-
 MERGE (ev)-[:CONSIDERADA_EN_AUDITORIA]->(ah);
 
 
-// ======================================================
-// 8. CONSULTAS DE VALIDACIÓN RÁPIDA (opcional, no son entregable)
-// ======================================================
-// Estas consultas sirven solo para comprobar que la carga funcionó.
-// No son las capturas finales del informe.
-//
-// Resultados esperados con el dataset entregado:
-//   8.1 -> 129 :Normativa, y conteos por etiqueta combinada.
-//   8.2 -> Relevante: 20 | No Relevante: 109.
-//   8.3 -> total de relaciones ACTIVA_REGLA distintas de cero (sin falsos
-//          positivos de POS).
-
-
-// 8.1 Cantidad de nodos por etiqueta
-MATCH (n)
-RETURN labels(n) AS etiquetas, count(n) AS total
-ORDER BY total DESC;
-
-
-// 8.2 Cantidad de normativas por clasificación IA
-MATCH (n:Normativa)
-RETURN n.relevancia_ia AS clasificacion_ia, count(n) AS total;
-
-
-// 8.3 Cantidad de reglas activadas
-MATCH (:Normativa)-[ar:ACTIVA_REGLA]->(:ReglaNegocio)
-RETURN count(ar) AS total_reglas_activadas;
-
-
-// 8.4 Activaciones por regla (útil para verificar que POS ya no genera basura)
-MATCH (:Normativa)-[:ACTIVA_REGLA]->(r:ReglaNegocio)
-RETURN r.nombre AS regla, count(*) AS veces_activada
-ORDER BY veces_activada DESC;
 
 
 // ======================================================
